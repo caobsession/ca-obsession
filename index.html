@@ -8808,6 +8808,52 @@ Follow us on Instagram for community interaction and quick communication via DM.
           <div id="pg-settings" class="pg">
             <div class="st mb16">⚙️ Settings</div>
             <div class="sg2">
+            <div class="sgt">📲 App Installation</div>
+
+            <div class="sr">
+              <div>
+                <div class="sl2">Install CA Obsession</div>
+                <div class="sd" id="installStatusText">
+                  Install CA Obsession for one-tap access, a cleaner full-screen experience, and reliable offline availability.
+                </div>
+                
+                <div
+                id="installSupportStatus"
+                style="
+                  margin-top:10px;
+                  display:inline-block;
+                  padding:6px 10px;
+                  border-radius:999px;
+                  font-size:.72rem;
+                  font-weight:600;
+                  background:rgba(255,255,255,.04);
+                  border:1px solid rgba(255,255,255,.08);
+                  color:var(--text2);
+                "
+              >
+                Checking browser support...
+              </div>
+              </div>
+
+              <div
+              class="sd"
+              id="installBrowserInfo"
+              style="margin-top:6px;font-size:.76rem"
+            >
+            </div>
+
+              <button
+                class="btn sm"
+                id="installAppBtn"
+                onclick="installCAApp()"
+                style="display:none"
+              >
+                📲 Install App
+              </button>
+            </div>
+
+          </div>
+            <div class="sg2">
               <div class="sgt">💾 Data Management</div>
               <div class="sr">
                 <div>
@@ -8862,8 +8908,21 @@ Follow us on Instagram for community interaction and quick communication via DM.
                 <div>
                   <div class="sl2">Persistence Status</div>
 
-                  <div class="sd" id="persistStatusText">
-                    Checking...
+                  <div
+                    id="persistStatusText"
+                    style="
+                      display:inline-block;
+                      margin-top:8px;
+                      padding:6px 10px;
+                      border-radius:999px;
+                      font-size:.72rem;
+                      font-weight:600;
+                      background:rgba(255,255,255,.04);
+                      border:1px solid rgba(255,255,255,.08);
+                      color:var(--text2);
+                    "
+                  >
+                    Checking protection...
                   </div>
 
                   <div
@@ -8883,7 +8942,7 @@ Follow us on Instagram for community interaction and quick communication via DM.
                   </div>
                 </div>
                 <button class="btn sm" onclick="reqPersist()">
-                  🔒 Protect
+                  🛡 Protect Data
                 </button>
               </div>
               <div class="sr">
@@ -10190,7 +10249,7 @@ Follow us on Instagram for community interaction and quick communication via DM.
       ];
 
       const KEY = "cao_v4";
-      const APP_VERSION = "v73 Stable";
+      const APP_VERSION = "v77 Stable";
 
       /* ══════════════════════════════════════════════════════════
    GLOBAL STORAGE MUTEX
@@ -11219,64 +11278,93 @@ Follow us on Instagram for community interaction and quick communication via DM.
         " KB in localStorage · IndexedDB: files stored separately";
     }
 
-    /* Persistence Status */
-    const persistEl =
-  document.getElementById("persistStatusText");
+          /* Persistence Status */
+          const persistEl =
+            document.getElementById("persistStatusText");
 
-const persistDesc =
-  document.getElementById("persistStatusDesc");
+          const persistDesc =
+            document.getElementById("persistStatusDesc");
 
-if (
-  persistEl &&
-  navigator.storage &&
-  navigator.storage.persisted
-) {
-  const persisted =
-    await navigator.storage.persisted();
+          if (persistEl) {
 
-  if (persisted) {
-    persistEl.innerHTML =
-      "🟢 Protected";
+            let storageAccessible = true;
 
-    if (persistDesc) {
-      persistDesc.textContent =
-        "Browser protection is active. CA Obsession data is protected from automatic storage cleanup.";
-    }
-  } else {
-    persistEl.innerHTML =
-      "🔴 Not Protected";
+            try {
+              localStorage.getItem(KEY);
+            } catch (err) {
+              storageAccessible = false;
+            }
 
-    if (persistDesc) {
-      persistDesc.textContent =
-        "Browser protection is not active. Data is still saved normally but may be removed during automatic browser storage cleanup.";
-    }
-  }
-}
-  } catch (e) {
-    console.error(e);
+            if (!storageAccessible) {
 
-    if (el) {
-      el.textContent =
-        "Storage info unavailable";
-    }
+              persistEl.textContent =
+                "🔴 Storage access blocked";
 
-    const persistEl =
-  document.getElementById("persistStatusText");
+              if (persistDesc) {
+                persistDesc.textContent =
+                  "This browser is currently preventing CA Obsession from saving data on this device.";
+              }
 
-const persistDesc =
-  document.getElementById("persistStatusDesc");
+            } else {
 
-if (persistEl) {
-  persistEl.textContent =
-    "Status unavailable";
-}
+              const persisted =
+                navigator.storage &&
+                navigator.storage.persisted
+                  ? await navigator.storage.persisted()
+                  : false;
 
-if (persistDesc) {
-  persistDesc.textContent =
-    "Unable to determine browser protection status.";
-}
-  }
-}
+              if (persisted) {
+
+                persistEl.textContent =
+                  "🟢 Additional storage protection active";
+
+                if (persistDesc) {
+                  persistDesc.textContent =
+                    "Your study data is being saved normally and has additional protection against automatic browser storage cleanup.";
+                }
+
+              } else {
+
+                persistEl.textContent =
+                  "🟠 Additional storage protection not enabled";
+
+                if (persistDesc) {
+                  persistDesc.textContent =
+                    "Your study data is still being saved normally on this device. Additional browser storage protection has not been enabled.";
+                }
+
+              }
+            }
+          }
+                  } catch (e) {
+
+            console.warn(
+              "CA Obsession: failed to update storage info display.",
+              e
+            );
+
+            if (el) {
+              el.textContent =
+                "Storage info unavailable";
+            }
+
+            const persistEl =
+              document.getElementById("persistStatusText");
+
+            const persistDesc =
+              document.getElementById("persistStatusDesc");
+
+            if (persistEl) {
+              persistEl.textContent =
+                "🔴 Storage access blocked";
+            }
+
+            if (persistDesc) {
+              persistDesc.textContent =
+                "This browser is currently preventing CA Obsession from saving data on this device.";
+            }
+
+          }}
 
       /* ── UTILS ── */
       function esc(s) {
@@ -15093,47 +15181,283 @@ await persistNow();
         );
       }
 
+      function showInstallModal() {
+
+        document.getElementById("genTitle").textContent =
+          "📲 Install CA Obsession on This Device";
+
+        document.getElementById("genBody").innerHTML = `
+
+          <div style="
+            color:var(--text2);
+            line-height:1.65;
+          ">
+
+            <div style="margin-bottom:12px">
+              Turn CA Obsession into a dedicated study app on your device and access your workspace instantly whenever you need it.
+            </div>
+
+            <div style="
+              display:flex;
+              flex-direction:column;
+              gap:8px;
+              margin-bottom:16px;
+            ">
+              <div>🚀 Launch directly from your Home Screen or Desktop</div>
+              <div>🖥️ Enjoy a cleaner full-screen study environment</div>
+              <div>⚡ Open your workspace instantly without searching for a browser tab</div>
+              <div>📶 Continue using core features even when your internet connection is unavailable</div>
+            </div>
+
+            <div style="
+              padding:12px;
+              border-radius:12px;
+              background:rgba(255,80,80,.08);
+              border:1px solid rgba(255,80,80,.18);
+            ">
+
+              <div style="
+              font-weight:700;
+              margin-bottom:8px;
+              color:#ffb86b;
+            ">
+              ⚠️ Storage & Data Information
+            </div>
+
+            <div style="
+              color:var(--text2);
+              line-height:1.7;
+            ">
+              Installing CA Obsession does not move your data to external servers or a separate application.
+
+              <br><br>
+
+              Your study progress, notes, tasks, and resources remain stored locally within the same browser environment used today.
+
+              <br><br>
+
+              All backup, privacy, storage, and data-protection policies remain exactly the same after installation.
+            </div>
+
+            <div style="
+            margin-top:14px;
+            display:flex;
+            justify-content:center;
+          ">
+            <div style="
+              padding:6px 12px;
+              border-radius:999px;
+              background:rgba(255,180,80,.08);
+              border:1px solid rgba(255,180,80,.18);
+              font-size:.75rem;
+              color:#ffcf85;
+            ">
+              ⏱ Installation usually takes less than 10 seconds
+            </div>
+          </div>
+
+            <div style="
+              display:flex;
+              justify-content:flex-end;
+              gap:10px;
+              margin-top:18px;
+            ">
+
+              <button
+                class="btn"
+                onclick="closeGen()"
+              >
+                Cancel
+              </button>
+
+              <button
+                class="btn pri"
+                onclick="confirmInstallCAApp()"
+              >
+                Install Now
+              </button>
+
+            </div>
+
+          </div>
+        `;
+
+        showOv("genOv");
+      }
+
+      async function confirmInstallCAApp() {
+
+        closeGen();
+
+        if (!window._p9InstallPrompt) {
+          return;
+        }
+
+        try {
+
+          await window._p9InstallPrompt.prompt();
+
+          const choice =
+            await window._p9InstallPrompt.userChoice;
+
+          window._p9InstallPrompt = null;
+
+          if (choice.outcome === "accepted") {
+
+            cf(
+              "Installation Started",
+              "CA Obsession is being installed on your device.",
+              null,
+              "OK"
+            );
+
+          }
+
+        } catch (e) {
+
+          console.error(e);
+
+        }
+      }
+
+      function updateInstallUI() {
+
+      const btn =
+        document.getElementById("installAppBtn");
+
+      const info =
+        document.getElementById("installBrowserInfo");
+
+      if (!btn || !info) return;
+
+      if (window._p9InstallPrompt) {
+
+        btn.style.display = "";
+
+        info.innerHTML =
+          "✅ This browser supports app installation.";
+
+      } else {
+
+        btn.style.display = "none";
+
+        const ua =
+          navigator.userAgent.toLowerCase();
+
+        if (
+          ua.includes("firefox") ||
+          ua.includes("zen")
+        ) {
+
+          info.innerHTML =
+            "ℹ️ Installation is not currently supported by this browser. Chrome, Edge, Brave, and Samsung Internet provide the best installation experience.";
+
+        } else if (
+          /iphone|ipad|ipod/i.test(
+            navigator.userAgent
+          )
+        ) {
+
+          info.innerHTML =
+            "📱 On iPhone or iPad, use Share → Add to Home Screen.";
+
+        } else {
+
+          info.innerHTML =
+            "ℹ️ Installation is currently unavailable on this device.";
+        }
+      }
+    }
+
+      function installCAApp() {
+
+        if (!window._p9InstallPrompt) {
+
+          cf(
+            "App Installation",
+            "Installation is not currently available on this device or browser.",
+            null,
+            "OK"
+          );
+
+          return;
+        }
+
+        showInstallModal();
+      }
+
       /* ── STORAGE UTILITY ACTIONS ── */
-async function reqPersist() {
-  try {
-    if (!navigator.storage || !navigator.storage.persist) {
-      cf(
-        "🔒 Persistent Storage",
-        "Your browser does not support Persistent Storage.",
-        null,
-        "OK",
-      );
-      return;
-    }
+      async function reqPersist() {
+        try {
 
-    await navigator.storage.persist();
+          if (!navigator.storage || !navigator.storage.persist) {
 
-    const verified =
-      await navigator.storage.persisted();
+            cf(
+              "🔒 Storage Protection",
+              "This browser does not support storage persistence.",
+              null,
+              "OK"
+            );
 
-    cf(
-      "🔒 Persistent Storage",
-      verified
-        ? "✅ Persistent Storage is ACTIVE and verified. CA Obsession data is protected from automatic browser cleanup."
-        : "⚠️ Persistent Storage was NOT enabled by the browser. Your data is still saved normally, but it may be eligible for automatic cleanup during low-storage situations.",
-      null,
-      "OK",
-    );
+            return;
+          }
 
-    if (typeof updStorInfo === "function") {
-      await updStorInfo();
-    }
-  } catch (err) {
-    console.error(err);
+          const alreadyGranted =
+            await navigator.storage.persisted();
 
-    cf(
-      "🔒 Persistent Storage",
-      "Unable to verify persistent storage status.",
-      null,
-      "OK",
-    );
-  }
-}
+          if (alreadyGranted) {
+
+            cf(
+              "🔒 Storage Protection",
+              "✅ Storage persistence is already enabled. CA Obsession has additional protection against automatic browser storage cleanup.",
+              null,
+              "OK"
+            );
+
+            await updStorInfo();
+
+            return;
+          }
+
+          const granted =
+            await navigator.storage.persist();
+
+          const verified =
+            await navigator.storage.persisted();
+
+          if (granted && verified) {
+
+            cf(
+              "🔒 Storage Protection Enabled",
+              "✅ Storage persistence has been enabled successfully. CA Obsession now has additional protection against automatic browser storage cleanup.",
+              null,
+              "OK"
+            );
+
+          } else {
+
+            cf(
+              "🔒 Storage Protection",
+              "⚠️ The browser did not grant storage persistence. Your study data is still being saved normally and remains available, but additional browser storage protection could not be enabled.",
+              null,
+              "OK"
+            );
+          }
+
+          await updStorInfo();
+
+        } catch (err) {
+
+          console.error(err);
+
+          cf(
+            "🔒 Storage Protection",
+            "Unable to verify storage persistence status.",
+            null,
+            "OK"
+          );
+        }
+      }
 
       async function runManualRelink() {
         cf(
@@ -28233,6 +28557,10 @@ async function reqPersist() {
         _showWarnOnStart = !S.seenStartupWarn || _storageCorrupted;
         showOv("wOv");
         updStorInfo();
+        updateInstallUI();
+        if (window.updateInstallUI) {
+          setTimeout(updateInstallUI, 500);
+        }
         // Populate version display in settings
         const vEl = document.getElementById("settingsVersionDisplay");
         if (vEl) vEl.textContent = APP_VERSION;
@@ -29736,22 +30064,72 @@ async function reqPersist() {
    On standalone display mode: suppress any stray inline browser UI. */
       (function () {
         window._p9InstallPrompt = null;
-        window.addEventListener("beforeinstallprompt", function (e) {
-          e.preventDefault();
-          window._p9InstallPrompt = e;
-        });
 
-        // Detect standalone mode for body class (enables PWA-specific CSS)
-        if (
-          window.matchMedia &&
-          window.matchMedia("(display-mode: standalone)").matches
-        ) {
-          document.body.classList.add("_p9Standalone");
+        function updateInstallUI() {
+          const btn = document.getElementById("installAppBtn");
+          const txt = document.getElementById("installStatusText");
+          const statusEl =
+            document.getElementById("installSupportStatus");
+
+          if (!btn || !txt) return;
+
+          const standalone =
+            window.matchMedia("(display-mode: standalone)").matches ||
+            window.navigator.standalone === true;
+
+          if (standalone) {
+            btn.style.display = "none";
+            txt.textContent =
+              "CA Obsession is already installed on this device.";
+              if (statusEl) {
+              statusEl.innerHTML =
+                "✅ CA Obsession is already installed";
+            }
+            return;
+          }
+
+          txt.textContent =
+            "Install CA Obsession for one-tap access, a cleaner full-screen experience, and reliable offline availability.";
+
+          if (window._p9InstallPrompt) {
+
+            if (statusEl) {
+              statusEl.innerHTML =
+                "🟢 Installation supported on this browser";
+            }
+
+            btn.style.display = "inline-flex";
+
+          } else {
+
+            if (statusEl) {
+              statusEl.innerHTML =
+                "🟠 Installation not available in this browser";
+            }
+
+            btn.style.display = "none";
+          }
+          
         }
-        // iOS standalone detection
-        if (window.navigator.standalone === true) {
-          document.body.classList.add("_p9Standalone");
+
+        window.addEventListener(
+        "beforeinstallprompt",
+        function (e) {
+
+          e.preventDefault();
+
+          window._p9InstallPrompt = e;
+
+          updateInstallUI();
         }
+      );
+
+        document.addEventListener(
+          "DOMContentLoaded",
+          updateInstallUI
+        );
+
+        window.updateInstallUI = updateInstallUI;
       })();
 
       /* ── PACK 9: OFFLINE CONFIDENCE GUARD ──
@@ -29982,7 +30360,7 @@ async function reqPersist() {
             const vEl = document.getElementById("settingsVersionDisplay");
             if (vEl) {
               vEl.textContent =
-                (typeof APP_VERSION !== "undefined" ? APP_VERSION : "v73") +
+                (typeof APP_VERSION !== "undefined" ? APP_VERSION : "v77") +
                 " — Final Release";
             }
           } catch (e) {}
